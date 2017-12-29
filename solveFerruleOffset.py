@@ -6,6 +6,8 @@ import subprocess
 import numpy
 import datetime
 
+GCAM_PATH = "/uufs/chpc.utah.edu/common/home/sdss/sdsswork/lco/gcam"
+
 # based on this threshold we can decide weather or not we're
 # relatively centered on field
 GDRMS_THRESH = 0.6
@@ -59,8 +61,29 @@ def compileGCAM(gcamPath):
             if not file.startswith("proc-"):
                 pass
             filename = os.path.join(d, file)
-            procList.append(ProcGimg(filename))
+            try:
+                procGimg = ProcGimg(filename)
+            except:
+                continue
+            procList.append(procGimg)
     return procList
+
+def getProcPaths(gcamPath, minMJD = None):
+    keepMJDs = []
+    allMJDs = glob.glob(os.path.join(gcamPath, "/*"))
+    if minMJD is not None:
+        for mjd in allMJDs:
+            if int(os.path.split()[-1]) < minMJD:
+                continue
+            keepMJDs.append(mjd)
+    else:
+        keepMJDs = allMJDs
+    allProcFiles = []
+    for mjd in keepMJDs:
+        procList = glob.glob(os.path.join(mjd, "proc-*"))
+        allProcFiles.extend(procList)
+    return allProcFiles
+
 
 def sortProcList(procList):
     outDict = {}
@@ -76,7 +99,13 @@ def sortProcList(procList):
         outDict[proc.cartID][proc.plateID].append(proc)
     return outDict
 
-procList = compileGCAM("gcam")
+procFileList = getProcPaths(GCAM_PATH)
+procList = []
+for procFile in procFileList:
+    try:
+        procList.append(ProcGimg(procFile))
+    except:
+        continue
 outDict = sortProcList(procList)
 import pdb; pdb.set_trace()
 
