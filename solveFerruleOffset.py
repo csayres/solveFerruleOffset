@@ -99,7 +99,7 @@ def sortProcList(procList):
         outDict[proc.cartID][proc.plateID].append(proc)
     return outDict
 
-procFileList = getProcPaths(GCAM_PATH)
+procFileList = getProcPaths(GCAM_PATH, minMJD = 58000)
 procList = []
 for procFile in procFileList:
     try:
