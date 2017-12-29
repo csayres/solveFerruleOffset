@@ -70,10 +70,10 @@ def compileGCAM(gcamPath):
 
 def getProcPaths(gcamPath, minMJD = None):
     keepMJDs = []
-    allMJDs = glob.glob(os.path.join(gcamPath, "/*"))
+    allMJDs = glob.glob(os.path.join(gcamPath, "*"))
     if minMJD is not None:
         for mjd in allMJDs:
-            if int(os.path.split()[-1]) < minMJD:
+            if int(os.path.split(mjd)[-1]) < minMJD:
                 continue
             keepMJDs.append(mjd)
     else:
