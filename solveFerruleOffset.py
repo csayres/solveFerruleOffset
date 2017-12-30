@@ -22,38 +22,37 @@ GDRMS_THRESH = 0.6
 # rotStar2Sky = 90 + fiber rotation - phi
 class ProcGimg(object):
     def __init__(self, fitsFilePath):
-        f = fits.open(fitsFilePath)
-        self.grms = f[0].header["GDRMS"]
-        self.cartID = f[0].header["CARTID"]
-        self.plateID = f[0].header["PLATEID"]
-        self.seeing = f[0].header["SEEING"]
-        self.offRA = f[0].header["DRA"]
-        self.offDec = f[0].header["DDEC"]
-        self.offRot = f[0].header["DROT"]
-        self.offFocus = f[0].header["DFOCUS"]
-        self.offScale = f[0].header["DSCALE"]
-        self.xFocal = f[-1].data["xFocal"]
-        self.yFocal = f[-1].data["yFocal"]
-        self.rotation = f[-1].data["rotation"]
-        self.phi = f[-1].data["phi"]
-        self.rotStar2Sky = f[-1].data["rotStar2Sky"]
-        self.xCenter = f[-1].data["xCenter"]
-        self.yCenter = f[-1].data["yCenter"]
-        self.xstar = f[-1].data["xstar"]
-        self.ystar = f[-1].data["ystar"]
-        self.dx = f[-1].data["dx"]
-        self.dy = f[-1].data["dy"]
-        self.dRA = f[-1].data["dRA"]
-        self.dDec = f[-1].data["dDec"]
-        # parse date as datetime
-        dt = f[0].header["DATE-OBS"]
-        dt = dt.split(".")[0]
-        self.dt = datetime.datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")
-        # parse mjd dir and expno
-        filename = f[0].header["FILENAME"]
-        self.mjd = int(filename.split("/data/gcam/")[-1].split("/")[0])
-        self.expno = int(filename.split("gimg-")[-1].split(".")[0])
-        f.close()
+        with fits.open(fitsFilePath) as f:
+            self.grms = f[0].header["GDRMS"]
+            self.cartID = f[0].header["CARTID"]
+            self.plateID = f[0].header["PLATEID"]
+            self.seeing = f[0].header["SEEING"]
+            self.offRA = f[0].header["DRA"]
+            self.offDec = f[0].header["DDEC"]
+            self.offRot = f[0].header["DROT"]
+            self.offFocus = f[0].header["DFOCUS"]
+            self.offScale = f[0].header["DSCALE"]
+            self.xFocal = f[-1].data["xFocal"]
+            self.yFocal = f[-1].data["yFocal"]
+            self.rotation = f[-1].data["rotation"]
+            self.phi = f[-1].data["phi"]
+            self.rotStar2Sky = f[-1].data["rotStar2Sky"]
+            self.xCenter = f[-1].data["xCenter"]
+            self.yCenter = f[-1].data["yCenter"]
+            self.xstar = f[-1].data["xstar"]
+            self.ystar = f[-1].data["ystar"]
+            self.dx = f[-1].data["dx"]
+            self.dy = f[-1].data["dy"]
+            self.dRA = f[-1].data["dRA"]
+            self.dDec = f[-1].data["dDec"]
+            # parse date as datetime
+            dt = f[0].header["DATE-OBS"]
+            dt = dt.split(".")[0]
+            self.dt = datetime.datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")
+            # parse mjd dir and expno
+            filename = f[0].header["FILENAME"]
+            self.mjd = int(filename.split("/data/gcam/")[-1].split("/")[0])
+            self.expno = int(filename.split("gimg-")[-1].split(".")[0])
 
 def compileGCAM(gcamPath):
     procList = []
@@ -106,11 +105,13 @@ def processGimg(gimgPath):
     except:
         return None
 
-procFileList = getProcPaths(GCAM_PATH, minMJD = 58000)
-p = Pool(10)
+procFileList = getProcPaths(GCAM_PATH, minMJD = 58090)
+p = Pool(20)
 print("start multiprocessing")
-procList = p.map(processGimg, procFileList)
+procListWithNones = p.map(processGimg, procFileList)
 print("done multiprocessing")
+# remove Nones from procList:
+procList = [x for x in procListWithNones if x is not None]
 outDict = sortProcList(procList)
 import pdb; pdb.set_trace()
 
