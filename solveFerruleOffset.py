@@ -5,6 +5,7 @@ from astropy.io import fits
 import subprocess
 import numpy
 import datetime
+from multiprocessing import Pool
 
 GCAM_PATH = "/uufs/chpc.utah.edu/common/home/sdss/sdsswork/lco/gcam"
 
@@ -99,13 +100,17 @@ def sortProcList(procList):
         outDict[proc.cartID][proc.plateID].append(proc)
     return outDict
 
-procFileList = getProcPaths(GCAM_PATH, minMJD = 58000)
-procList = []
-for procFile in procFileList:
+def processGimg(gimgPath):
     try:
-        procList.append(ProcGimg(procFile))
+        return ProcGimg(gimgPath)
     except:
-        continue
+        return None
+
+procFileList = getProcPaths(GCAM_PATH, minMJD = 58000)
+p = Pool(10)
+print("start multiprocessing")
+procList = p.map(processGimg, procFileList)
+print("done multiprocessing")
 outDict = sortProcList(procList)
 import pdb; pdb.set_trace()
 
