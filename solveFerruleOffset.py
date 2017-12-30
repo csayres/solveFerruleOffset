@@ -105,6 +105,8 @@ def processGimg(gimgPath):
     except:
         return None
 
+# mjd 58090 is first with LED implementation
+
 procFileList = getProcPaths(GCAM_PATH, minMJD = 58090)
 p = Pool(20)
 print("start multiprocessing")
